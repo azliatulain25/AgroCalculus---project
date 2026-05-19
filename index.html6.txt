@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroCalculus: MD2 Pineapple Growth Dynamics</title>
+  
+  <!-- Tailwind CSS CDN for modern and responsive styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts (Inter & JetBrains Mono for formulas) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN for interactive visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- KaTeX CDN for beautiful mathematical typesetting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .math-font {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Dynamic Pulse for selected points */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Top Academic Navigation Bar -->
+  <header class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <!-- Leaf Icon -->
+        <div class="p-2 bg-emerald-600 rounded-lg shadow-inner">
+          <svg class="w-8 h-8 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black tracking-tight flex items-center gap-2">
+            AgroCalculus <span class="text-xs bg-yellow-400 text-emerald-950 font-bold px-2 py-0.5 rounded-full uppercase">SFA: Agrotech</span>
+          </h1>
+          <p class="text-xs text-emerald-200">Interactive Bioscience Modeling of MD2 Pineapple (Ananas comosus) Growth Dynamics</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm bg-emerald-900/40 px-3 py-1.5 rounded-lg border border-emerald-600/30">
+        <span class="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-ping"></span>
+        <span class="font-medium">Scenario: Pontian Peat Soil Harvest Dynamics</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+    
+    <!-- Introduction Panel -->
+    <div class="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-slate-100 flex flex-col md:flex-row gap-6 items-start justify-between">
+      <div class="space-y-3 max-w-4xl">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+          🌱 Agrotechnology & Bioscience Application
+        </div>
+        <h2 class="text-xl font-bold text-slate-900">Determining Growth Rates to Optimize Crop Inputs & Harvest Scheduling</h2>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          In Malaysian intensive farming, maximizing the yield of premium <strong>MD2 Pineapples</strong> is critical. Because pineapple growth on acidic peat soils is non-linear, agrotechnologists utilize <strong>sigmoidal logistic models</strong>. The derivative <span class="font-semibold text-teal-600">W'(t)</span> represents the exact instantaneous rate of biomass accumulation (g/week). This simulator models a single fruit weight in Pontian, Johor, over <strong>Weeks 8 to 22</strong> after flower induction (forcing).
+        </p>
+        <div class="text-xs text-slate-400">
+          💡 <span class="font-semibold text-slate-500">Interactive Tip:</span> Drag the slider or <span class="underline decoration-teal-500 font-medium text-slate-500">click anywhere inside the graph</span> to analyze the derivative (slope) and agronomic interpretation at any point.
+        </div>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 self-stretch flex flex-col justify-center min-w-[220px]">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Key Plant Parameters</div>
+        <div class="space-y-1.5 text-xs text-slate-600">
+          <p class="flex justify-between"><span>Mature Weight Limit (L):</span> <span class="font-mono font-bold">2100 g</span></p>
+          <p class="flex justify-between"><span>Growth Rate Constant (k):</span> <span class="font-mono font-bold">0.45 wk⁻¹</span></p>
+          <p class="flex justify-between"><span>Midpoint Week (t₀):</span> <span class="font-mono font-bold">Week 15</span></p>
+          <p class="flex justify-between"><span>Active Growth Horizon:</span> <span class="font-mono font-bold">8 to 22 Weeks</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Interface Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Column 1: Graph & Dynamic Calculations (8 Columns wide) -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+        
+        <!-- The Interactive Chart Canvas Card -->
+        <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 flex-grow">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                MD2 Fruit Biomass Accumulation W(t)
+              </h3>
+              <p class="text-xs text-slate-400">Y-axis shows Cumulative Weight (g) | X-axis shows Weeks Post-Forcing</p>
+            </div>
+            <!-- Live Status Tag -->
+            <div id="status-tag" class="text-xs font-bold px-2.5 py-1 rounded-full self-start sm:self-auto shadow-sm">
+              Lag Phase
+            </div>
+          </div>
+
+          <!-- Chart Area Container -->
+          <div class="relative h-[320px] sm:h-[380px] w-full mb-2">
+            <canvas id="growthChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Analytical Output Block -->
+        <div class="bg-slate-900 text-slate-100 rounded-2xl p-6 shadow-lg border border-slate-800">
+          <h4 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 flex items-center justify-between">
+            <span>Calculus Calculus Engine (Live Outputs)</span>
+            <span class="text-[10px] text-slate-400">Updated Real-Time</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="space-y-1">
+              <span class="text-xs text-slate-400 block">Selected Time (t)</span>
+              <div class="text-2xl font-black text-white"><span id="out-week">15.0</span> <span class="text-xs font-normal text-slate-400">weeks</span></div>
+              <span class="text-[10px] text-emerald-500/80 block italic">Weeks Post-Flower Induction</span>
+            </div>
+            <div class="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-6">
+              <span class="text-xs text-slate-400 block">Biomass Weight W(t)</span>
+              <div class="text-2xl font-black text-white"><span id="out-weight">1050.0</span> <span class="text-xs font-normal text-slate-400">grams</span></div>
+              <span class="text-[10px] text-slate-400 block" id="out-pct">50.0% of full potential achieved</span>
+            </div>
+            <div class="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-6">
+              <span class="text-xs text-slate-400 block">Instantaneous Growth Rate W'(t)</span>
+              <div class="text-2xl font-black text-emerald-400"><span id="out-deriv">236.25</span> <span class="text-xs font-normal text-slate-300">g/week</span></div>
+              <span class="text-[10px] text-slate-300 block" id="out-daily-deriv">(~33.8 g/day biomass intake)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Column 2: Dashboard Control, Formulas & Agronomy (5 Columns wide) -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        
+        <!-- Controls Card -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            Timeline Scrubber
+          </h3>
+          
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm font-semibold mb-2">
+                <span class="text-slate-500">Weeks After Flower Induction:</span>
+                <span class="text-teal-600 bg-teal-50 px-2.5 py-0.5 rounded-md font-mono" id="slider-val">15.0 weeks</span>
+              </div>
+              <input 
+                type="range" 
+                id="time-slider" 
+                min="8.0" 
+                max="22.0" 
+                step="0.1" 
+                value="15.0"
+                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
+              >
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span>Wk 8 (Fruit Set)</span>
+                <span>Wk 15 (Mid-Point)</span>
+                <span>Wk 22 (Harvest-Ready)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Layman & Agronomic Explanation Panel -->
+        <div id="explanation-card" class="rounded-2xl p-6 border transition-all duration-300 shadow-sm">
+          <div class="flex items-start gap-4">
+            <div id="explanation-icon" class="p-3 rounded-xl shadow-inner mt-1">
+              <!-- SVG Icon updated by JS -->
+            </div>
+            <div class="space-y-2 flex-grow">
+              <span class="text-[10px] uppercase font-bold tracking-wider opacity-60">Agronomic Growth Phase</span>
+              <h4 class="font-extrabold text-lg text-slate-900 leading-tight" id="phase-title">Active Growth Phase</h4>
+              <p class="text-sm text-slate-600 leading-relaxed" id="phase-explanation">
+                Analyzing pineapple fruit cells expansion. Growth rates are currently peaking.
+              </p>
+              
+              <div class="pt-4 border-t border-slate-200/60 mt-4 space-y-2">
+                <span class="text-xs font-bold text-slate-900 block flex items-center gap-1">
+                  🚜 Field Recommendation:
+                </span>
+                <p class="text-xs text-slate-600 leading-relaxed" id="phase-action">
+                  Loading field actions...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Mathematical Formula Card with KaTeX -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex-grow">
+          <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 11h.01M12 7h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            Step-by-Step Bio-Calculus Evaluation
+          </h3>
+          
+          <div class="space-y-4">
+            <!-- Growth Formula -->
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block mb-2">1. Logistic Weight Function W(t)</span>
+              <div id="growth-math-display" class="overflow-x-auto py-1 scrollbar-thin text-sm sm:text-base">
+                <!-- KaTeX Rendered dynamic function -->
+              </div>
+            </div>
+
+            <!-- Derivative Formula -->
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block mb-2">2. Growth Rate (Derivative) W'(t)</span>
+              <div id="deriv-math-display" class="overflow-x-auto py-1 scrollbar-thin text-sm sm:text-base">
+                <!-- KaTeX Rendered dynamic derivative -->
+              </div>
+              <div class="mt-2 text-[10px] text-slate-400 leading-normal">
+                Proves <span class="font-mono text-teal-600 font-bold">W'(t) = k·W(t)[1 - W(t)/L]</span>, showing growth is directly linked to both current size and remaining growth capacity.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tabbed Educational Resources & Bioscience Context -->
+    <div class="mt-10 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <!-- Tabs Selector Header -->
+      <div class="bg-slate-50 border-b border-slate-100 flex flex-wrap gap-2 px-4 sm:px-6 pt-3">
+        <button onclick="switchTab('tab-biology')" id="btn-tab-biology" class="tab-btn px-4 py-3 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 transition">
+          🌾 Biological & Field Context
+        </button>
+        <button onclick="switchTab('tab-math')" id="btn-tab-math" class="tab-btn px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">
+          📐 Calculus Proof & Derivation
+        </button>
+        <button onclick="switchTab('tab-quiz')" id="btn-tab-quiz" class="tab-btn px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">
+          📝 Agrotech Quiz
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="p-6">
+        
+        <!-- Tab 1: Biology -->
+        <div id="tab-biology" class="tab-content space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-3">
+              <h4 class="font-bold text-slate-900 text-lg">MD2 Pineapple Agronomy on Pontian Peat Soil</h4>
+              <p class="text-slate-600 text-sm leading-relaxed">
+                Malaysia is a major world exporter of MD2 pineapple, a hybrid breed prized for its brilliant sweetness (Brix index of up to 21%), low acidity, high vitamin C, and exceptionally thin crown. Cultivated predominantly on deep, organic <strong>peat soils</strong> in Johor (especially Pontian, Simpang Renggam, and Pekan Nanas), this crop requires strict nutrition budgeting.
+              </p>
+              <p class="text-slate-600 text-sm leading-relaxed">
+                Peat soil has extremely high organic matter but is naturally nutrient-poor and extremely acidic (pH 3.5 - 4.2). Hence, fertilizer translocation must match the plant's metabolic sink capacity perfectly. If we apply potassium (K) fertilizer too early, it is lost through heavy tropical leaching; if applied too late, the cell elongation phase has already concluded, resulting in small, sour fruits susceptible to sunburn and internal "rot/core browning" diseases.
+              </p>
+            </div>
+            <div class="space-y-4">
+              <h4 class="font-bold text-slate-900 text-sm">Authentic Malaysian Crop Data Sources</h4>
+              <div class="space-y-2">
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs">
+                  <span class="font-semibold text-slate-800 block">1. Malaysian Pineapple Industry Board (LPNM)</span>
+                  <p class="text-slate-500">Guidelines for High Density MD2 Cultivation and Peat Soil Fertilization Schemes.</p>
+                  <a href="https://www.mpib.gov.my" target="_blank" class="text-emerald-600 font-semibold hover:underline mt-1 block">Official Website: mpib.gov.my</a>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs">
+                  <span class="font-semibold text-slate-800 block">2. MARDI Research Journal</span>
+                  <p class="text-slate-500">"Yield Performance and Biochemical Attributes of Pineapple (MD2) Under Peat Conditions in Johor, Malaysia."</p>
+                  <a href="https://www.mardi.gov.my" target="_blank" class="text-emerald-600 font-semibold hover:underline mt-1 block">Official Website: mardi.gov.my</a>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs">
+                  <span class="font-semibold text-slate-800 block">3. Universiti Putra Malaysia (UPM) - Faculty of Agriculture</span>
+                  <p class="text-slate-500">Biomass modeling and dry matter accumulation equations for tropical fruit cultivars.</p>
+                  <a href="https://agri.upm.edu.my" target="_blank" class="text-emerald-600 font-semibold hover:underline mt-1 block">Faculty Site: agri.upm.edu.my</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Math -->
+        <div id="tab-math" class="tab-content hidden space-y-4">
+          <h4 class="font-bold text-slate-900 text-lg">Mathematical Derivation of Fruit Growth Dynamics</h4>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            The growth profile of many organic fruits resembles an S-shaped curve modeled by the classic <strong>Verhulst Logistic Equation</strong>:
+          </p>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-x-auto text-sm sm:text-base font-mono">
+            $$W(t) = \frac{L}{1 + e^{-k(t - t_0)}}$$
+          </div>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Where \(L\) is the ultimate carrying capacity (mature weight), \(k\) is the growth constant governing the slope steepness, and \(t_0\) is the midpoint inflection time.
+          </p>
+          <p class="text-slate-600 text-sm leading-relaxed font-semibold">
+            Using the Chain Rule and Quotient Rule, we derive the rate of change \(W'(t)\):
+          </p>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-x-auto text-sm sm:text-base font-mono space-y-2 text-slate-700">
+            <p>1. Rewrite the function with negative exponents: \(W(t) = L \cdot \left(1 + e^{-k(t-t_0)}\right)^{-1}\)</p>
+            <p>2. Differentiate with respect to time \(t\):</p>
+            <p class="pl-4">\(W'(t) = -L \cdot \left(1 + e^{-k(t-t_0)}\right)^{-2} \cdot \frac{d}{dt}\left[1 + e^{-k(t-t_0)}\right]\)</p>
+            <p class="pl-4">\(W'(t) = -L \cdot \left(1 + e^{-k(t-t_0)}\right)^{-2} \cdot \left(-k \cdot e^{-k(t-t_0)}\right)\)</p>
+            <p class="pl-4">\(W'(t) = \frac{L \cdot k \cdot e^{-k(t-t_0)}}{\left(1 + e^{-k(t-t_0)}\right)^2}\)</p>
+            <p>3. This analytical derivative represents the exact slope of the tangent line drawn on our graph.</p>
+          </div>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            By analyzing where the second derivative \(W''(t) = 0\), we discover the point of maximum velocity—the <strong>Inflection Point</strong>—which falls exactly at \(t = t_0\) (Week 15 in this simulator).
+          </p>
+        </div>
+
+        <!-- Tab 3: Quiz -->
+        <div id="tab-quiz" class="tab-content hidden space-y-6">
+          <div class="max-w-3xl">
+            <h4 class="font-bold text-slate-900 text-lg mb-2">SFA: Agrotech Bioscience Calculus Quiz</h4>
+            <p class="text-slate-600 text-sm mb-4">
+              Test your ability to relate mathematical derivatives with agronomic crop decisions. Read the questions and select the best bioscience answer!
+            </p>
+
+            <div class="space-y-6">
+              <!-- Q1 -->
+              <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                <span class="text-xs font-bold text-emerald-600 uppercase">Question 1</span>
+                <p class="font-bold text-slate-800 text-sm">
+                  At what week post-forcing does the MD2 pineapple fruit reach its maximum growth rate, and what is the biological significance?
+                </p>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-300 cursor-pointer text-xs text-slate-700">
+                    <input type="radio" name="q1" value="a" class="accent-emerald-600">
+                    <span>Week 8: The fruit has finished flowering and starts early cells proliferation under high metabolic stress.</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-300 cursor-pointer text-xs text-slate-700">
+                    <input type="radio" name="q1" value="b" class="accent-emerald-600">
+                    <span>Week 15: This is the inflection point where the derivative \(W'(t)\) peaks. It shows peak structural cell-expansion.</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-300 cursor-pointer text-xs text-slate-700">
+                    <input type="radio" name="q1" value="c" class="accent-emerald-600">
+                    <span>Week 22: Growth rate is maximum because the fruit has reached its highest physical mass ready for export.</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Q2 -->
+              <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                <span class="text-xs font-bold text-emerald-600 uppercase">Question 2</span>
+                <p class="font-bold text-slate-800 text-sm">
+                  If an agronomist calculates that \(W'(19) \approx 72.8\text{ g/week}\), but previously at Week 15, the rate was \(236.25\text{ g/week}\), what is happening physiologically inside the pineapple?
+                </p>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-300 cursor-pointer text-xs text-slate-700">
+                    <input type="radio" name="q2" value="a" class="accent-emerald-600">
+                    <span>The plant is entering senescence and losing physical cells due to severe peat soil acidity.</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-300 cursor-pointer text-xs text-slate-700">
+                    <input type="radio" name="q2" value="b" class="accent-emerald-600">
+                    <span>The physical fruit structure has completed volume growth and is shifting photosynthates toward sucrose synthesis and ripening.</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-300 cursor-pointer text-xs text-slate-700">
+                    <input type="radio" name="q2" value="c" class="accent-emerald-600">
+                    <span>The fruit's growth constant \(k\) has decreased mid-season due to tropical climate disruptions.</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex items-center gap-3">
+                <button onclick="gradeQuiz()" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 transition shadow-sm">
+                  Grade My Answers
+                </button>
+                <button onclick="resetQuiz()" class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 transition">
+                  Reset
+                </button>
+              </div>
+
+              <!-- Feedback box -->
+              <div id="quiz-feedback" class="hidden p-4 rounded-xl border">
+                <!-- Filled dynamically by JavaScript -->
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer block -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-6 mt-12 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div>
+        <p>&copy; 2026 AgroCalculus Model. Developed for Malaysian Agrotechnology Bioscience Students.</p>
+        <p class="text-slate-500 mt-1">Calculations based on standard sigmoidal growth curves of Ananas comosus in tropical peat soil environments.</p>
+      </div>
+      <div class="flex items-center gap-4 text-emerald-400">
+        <span>SFA: AGROTECH</span>
+        <span>•</span>
+        <span>MALAYSIA</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // --- Model Constants ---
+    const L = 2100;    // Carried carrying capacity of mature pineapple (grams)
+    const k = 0.45;    // Growth speed constant (week^-1)
+    const t0 = 15;     // Midpoint week where growth peaks (weeks post forcing)
+    const MIN_WEEK = 8;
+    const MAX_WEEK = 22;
+
+    // --- State Variables ---
+    let currentWeek = 15.0; // Starts at midpoint week
+    let growthChartInstance = null;
+
+    // --- Core Mathematics functions ---
+    
+    // Calculates cumulative weight W(t)
+    function W(t) {
+      return L / (1 + Math.exp(-k * (t - t0)));
+    }
+
+    // Analytical derivative W'(t) representing instantaneous growth velocity
+    function W_prime(t) {
+      const wt = W(t);
+      // W'(t) = k * W(t) * (1 - W(t)/L)
+      return k * wt * (1 - (wt / L));
+    }
+
+    // Calculates Y-coordinate on the tangent line for a given x, based on a pivot week ts
+    function getTangentY(x, ts) {
+      const w_s = W(ts);
+      const wp_s = W_prime(ts);
+      return wp_s * (x - ts) + w_s;
+    }
+
+    // --- Generate Dataset Points for Charting ---
+    function generateDatasetPoints() {
+      const points = [];
+      for (let t = MIN_WEEK; t <= MAX_WEEK; t += 0.25) {
+        points.push({ x: t, y: W(t) });
+      }
+      return points;
+    }
+
+    // Generate dynamic tangent line points based on the selected week
+    function generateTangentPoints(ts) {
+      const points = [];
+      
+      // We draw the tangent line extending +/- 2.5 weeks on either side of selected week to keep it relative
+      let t_start = Math.max(MIN_WEEK, ts - 2.5);
+      let t_end = Math.min(MAX_WEEK, ts + 2.5);
+
+      let y_start = getTangentY(t_start, ts);
+      let y_end = getTangentY(t_end, ts);
+
+      // Guard against drawing the tangent line below zero weight (unbiological)
+      if (y_start < 0) {
+        // Solve for t when y = 0: wp * (t - ts) + ws = 0 => t = ts - ws / wp
+        const zero_intersect = ts - (W(ts) / W_prime(ts));
+        t_start = Math.max(MIN_WEEK, zero_intersect);
+        y_start = 0;
+      }
+
+      points.push({ x: t_start, y: y_start });
+      points.push({ x: t_end, y: y_end });
+
+      return points;
+    }
+
+    // --- STREAMING_CHUNK:Configuring the chart canvas... ---
+    // --- Chart.js Setup and Event Listeners ---
+    function initChart() {
+      const ctx = document.getElementById('growthChart').getContext('2d');
+      const dataPoints = generateDatasetPoints();
+      const tangentPoints = generateTangentPoints(currentWeek);
+
+      growthChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'MD2 Fruit Weight W(t)',
+              data: dataPoints,
+              borderColor: '#10b981', // Emerald 500
+              backgroundColor: 'rgba(16, 185, 129, 0.05)',
+              borderWidth: 3,
+              pointRadius: 0,
+              fill: true,
+              tension: 0.1,
+              order: 2
+            },
+            {
+              label: "Tangent Line W'(t) (Slope)",
+              data: tangentPoints,
+              borderColor: '#ef4444', // Red 500
+              borderWidth: 2,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              fill: false,
+              order: 1
+            },
+            {
+              label: 'Selected Week Pivot',
+              data: [{ x: currentWeek, y: W(currentWeek) }],
+              borderColor: '#f59e0b', // Amber 500
+              backgroundColor: '#ffffff',
+              borderWidth: 3,
+              pointRadius: 8,
+              pointHoverRadius: 10,
+              fill: false,
+              order: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                font: { family: 'Inter', size: 11, weight: '500' },
+                boxWidth: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const x = context.parsed.x.toFixed(1);
+                  const y = context.parsed.y.toFixed(0);
+                  if (context.datasetIndex === 0) return `Weight: ${y}g at Week ${x}`;
+                  if (context.datasetIndex === 1) return `Tangent Line Coordinate`;
+                  return `Selected Active Week: ${x}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              min: MIN_WEEK,
+              max: MAX_WEEK,
+              title: {
+                display: true,
+                text: 'Weeks After Flower Induction (WAFI)',
+                font: { family: 'Inter', size: 12, weight: 'bold' }
+              },
+              grid: { color: 'rgba(226, 232, 240, 0.6)' }
+            },
+            y: {
+              type: 'linear',
+              min: 0,
+              max: 2200,
+              title: {
+                display: true,
+                text: 'Fresh Fruit Weight (g)',
+                font: { family: 'Inter', size: 12, weight: 'bold' }
+              },
+              grid: { color: 'rgba(226, 232, 240, 0.6)' }
+            }
+          },
+          // Enable users to click anywhere on the canvas grid to select that point!
+          onClick: (event) => {
+            const chartArea = growthChartInstance.chartArea;
+            const canvasPosition = Chart.helpers.getRelativePosition(event, growthChartInstance);
+            
+            // Check if click occurred inside chart grid boundaries
+            if (
+              canvasPosition.x >= chartArea.left &&
+              canvasPosition.x <= chartArea.right &&
+              canvasPosition.y >= chartArea.top &&
+              canvasPosition.y <= chartArea.bottom
+            ) {
+              const xValue = growthChartInstance.scales.x.getValueForPixel(canvasPosition.x);
+              // Clamp selected value to bounds
+              const clampedVal = Math.max(MIN_WEEK, Math.min(MAX_WEEK, xValue));
+              
+              // Update state and slider
+              document.getElementById('time-slider').value = clampedVal.toFixed(1);
+              updateSimulation(clampedVal);
+            }
+          }
+        }
+      });
+    }
+
+    // --- STREAMING_CHUNK:Building dynamic UI update and interactive click listeners... ---
+    // --- Phase-specific styling and insights generator ---
+    function getPhaseData(t) {
+      if (t < 11.5) {
+        return {
+          title: "Lag Growth Phase (Early Cell Proliferation)",
+          color: "bg-cyan-50 border-cyan-200 text-cyan-900",
+          textColor: "text-cyan-700",
+          accentClass: "bg-cyan-600 text-cyan-100",
+          svg: `<svg class="w-6 h-6 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`,
+          explanation: "Slow weight accumulation. The MD2 pineapple fruit has recently passed full anthesis. Cellular division is extremely active in the core and rind tissues, but cells are not yet retaining high water or sugar volumes.",
+          action: "Focus on crop moisture regulation on Pontian peat. Keep soil matrix moist, and ensure moderate nitrogen input to feed protein synthesis during the ongoing active cellular division."
+        };
+      } else if (t >= 11.5 && t <= 17.5) {
+        return {
+          title: "Logarithmic/Linear Phase (Max Cell Expansion)",
+          color: "bg-emerald-50 border-emerald-200 text-emerald-900",
+          textColor: "text-emerald-700",
+          accentClass: "bg-emerald-600 text-emerald-100",
+          svg: `<svg class="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+          explanation: "Maximum biological speed of biomass intake! Fruit cells undergo intense physical enlargement by drawing water and photosynthates from the leaves. The rate of biomass change W'(t) peaks at precisely Week 15.",
+          action: "Agronomic Critical Zone! Apply high-potassium (K) foliar fertilizers to fuel active cell-loading. Drought stress now will permanently stunted fruit sizes, lowering export quality from grade A down to C."
+        };
+      } else if (t > 17.5 && t <= 20.5) {
+        return {
+          title: "Deceleration Phase (Sugar Accumulation)",
+          color: "bg-amber-50 border-amber-200 text-amber-900",
+          textColor: "text-amber-700",
+          accentClass: "bg-amber-600 text-amber-100",
+          svg: `<svg class="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+          explanation: "Physical weight enlargement begins to plateau as the fruit reaches over 85% of its ultimate carrying capacity. Metabolism shifts from cell size expansion to internal sugar conversion (Brix loading).",
+          action: "Gradually reduce heavy irrigation to build soil-drying stress, which triggers accelerated synthesis of sucrose, fructose, and aromatic esters. Pre-harvest crop shielding protects against direct sun scalding."
+        };
+      } else {
+        return {
+          title: "Plateau & Harvesting Phase (Ripening)",
+          color: "bg-red-50 border-red-200 text-red-900",
+          textColor: "text-red-700",
+          accentClass: "bg-red-600 text-red-100",
+          svg: `<svg class="w-6 h-6 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+          explanation: "Harvest-ready window. The derivative rate of growth has dropped near zero (under 20g/wk). The MD2 pineapple fruit has reached physical maturity and the skin develops its signature gold-yellow base.",
+          action: "Initiate harvest! Hand-pick pineapples displaying a standard export skin-color index of 2 or 3. Handle carefully to prevent physical bruising of the soft pulp structure during transport to sorting bays."
+        };
+      }
+    }
+
+    // --- Core UI Update Loop ---
+    function updateSimulation(val) {
+      currentWeek = parseFloat(val);
+      
+      // Calculations
+      const weightVal = W(currentWeek);
+      const derivVal = W_prime(currentWeek);
+      const dailyDeriv = derivVal / 7;
+      const pctOfMax = (weightVal / L) * 100;
+
+      // Update Slider Visual text
+      document.getElementById('slider-val').textContent = `${currentWeek.toFixed(1)} weeks`;
+
+      // Update Calculus Output Cards
+      document.getElementById('out-week').textContent = currentWeek.toFixed(1);
+      document.getElementById('out-weight').textContent = weightVal.toFixed(1);
+      document.getElementById('out-pct').textContent = `${pctOfMax.toFixed(1)}% of maximum potential weight achieved`;
+      document.getElementById('out-deriv').textContent = derivVal.toFixed(2);
+      document.getElementById('out-daily-deriv').textContent = `(~${dailyDeriv.toFixed(1)} grams/day mass accumulation)`;
+
+      // Update Chart.js dataset properties
+      if (growthChartInstance) {
+        // Update Tangent dataset
+        growthChartInstance.data.datasets[1].data = generateTangentPoints(currentWeek);
+        // Update Pivot point dataset
+        growthChartInstance.data.datasets[2].data = [{ x: currentWeek, y: weightVal }];
+        // Redraw without animation for instantaneous dragging feedback
+        growthChartInstance.update('none');
+      }
+
+      // Update Dynamic Layman Explanations
+      const phaseInfo = getPhaseData(currentWeek);
+      const expCard = document.getElementById('explanation-card');
+      const expIcon = document.getElementById('explanation-icon');
+      const statusTag = document.getElementById('status-tag');
+
+      // Change card classes based on phase colors
+      expCard.className = `rounded-2xl p-6 border transition-all duration-300 shadow-sm ${phaseInfo.color}`;
+      expIcon.className = `p-3 rounded-xl shadow-inner mt-1 ${phaseInfo.accentClass}`;
+      expIcon.innerHTML = phaseInfo.svg;
+      
+      document.getElementById('phase-title').textContent = phaseInfo.title;
+      document.getElementById('phase-explanation').textContent = phaseInfo.explanation;
+      document.getElementById('phase-action').textContent = phaseInfo.action;
+
+      statusTag.textContent = phaseInfo.title.split(' (')[0];
+      statusTag.className = `text-xs font-bold px-2.5 py-1 rounded-full self-start sm:self-auto shadow-sm ${phaseInfo.accentClass}`;
+
+      // --- MathJax / KaTeX Equation Renders ---
+      const mathGrowthHTML = `W(${currentWeek.toFixed(1)}) = \\frac{2100}{1 + e^{-0.45(${currentWeek.toFixed(1)} - 15)}} = ${weightVal.toFixed(1)}\\text{ g}`;
+      
+      const mathDerivHTML = `
+        \\begin{aligned}
+        W'(${currentWeek.toFixed(1)}) &= 0.45 \\cdot W(${currentWeek.toFixed(1)}) \\cdot \\left(1 - \\frac{W(${currentWeek.toFixed(1)})}{2100}\\right) \\\\
+        &= 0.45 \\cdot ${weightVal.toFixed(0)} \\cdot \\left(1 - \\frac{${weightVal.toFixed(0)}}{2100}\\right) \\\\
+        &= ${derivVal.toFixed(2)}\\text{ g/week}
+        \\end{aligned}
+      `;
+
+      // Render math blocks
+      katex.render(mathGrowthHTML, document.getElementById('growth-math-display'), { displayMode: true, throwOnError: false });
+      katex.render(mathDerivHTML, document.getElementById('deriv-math-display'), { displayMode: true, throwOnError: false });
+    }
+
+    // Connect Range Input Slider
+    document.getElementById('time-slider').addEventListener('input', (e) => {
+      updateSimulation(e.target.value);
+    });
+
+    // --- Tab Switching Logic ---
+    function switchTab(tabId) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      // Show targeted tab
+      document.getElementById(tabId).classList.remove('hidden');
+
+      // Update classes of tab headers
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-600', 'text-emerald-700');
+        btn.classList.add('border-transparent', 'text-slate-500');
+      });
+
+      // Highlight active button
+      const activeBtn = document.getElementById(`btn-${tabId}`);
+      activeBtn.classList.remove('border-transparent', 'text-slate-500');
+      activeBtn.classList.add('border-emerald-600', 'text-emerald-700');
+    }
+
+    // --- STREAMING_CHUNK:Implementing the agrotech interactive quiz system... ---
+    // --- Interactive Quiz Logic ---
+    function gradeQuiz() {
+      const q1Ans = document.querySelector('input[name="q1"]:checked');
+      const q2Ans = document.querySelector('input[name="q2"]:checked');
+      const feedbackBox = document.getElementById('quiz-feedback');
+
+      if (!q1Ans || !q2Ans) {
+        feedbackBox.className = "p-4 rounded-xl border bg-yellow-50 border-yellow-200 text-yellow-800 text-xs";
+        feedbackBox.innerHTML = "⚠️ Please answer both quiz questions before grading.";
+        feedbackBox.classList.remove('hidden');
+        return;
+      }
+
+      let score = 0;
+      let feedbackHTML = "<div class='space-y-3 text-xs'>";
+
+      // Q1 Check
+      if (q1Ans.value === 'b') {
+        score++;
+        feedbackHTML += `
+          <div class='flex items-start gap-2 text-emerald-800'>
+            <span class='font-bold'>Q1 Correct:</span>
+            <p>Yes! Week 15 is the logistic curve's inflection point. Here, the derivative \(W'(t)\) reaches its maximum absolute value of 236.25g/week, signifying peak cellular expansion rate in the plant bioscience model.</p>
+          </div>
+        `;
+      } else {
+        feedbackHTML += `
+          <div class='flex items-start gap-2 text-rose-800'>
+            <span class='font-bold'>Q1 Incorrect:</span>
+            <p>Incorrect. Remember, the growth *velocity* is shown by the derivative \(W'(t)\), which peaks at the inflection point (Week 15). At Week 22, cumulative mass is high but velocity is near zero.</p>
+          </div>
+        `;
+      }
+
+      // Q2 Check
+      if (q2Ans.value === 'b') {
+        score++;
+        feedbackHTML += `
+          <div class='flex items-start gap-2 text-emerald-800 pt-2 border-t border-slate-200/50'>
+            <span class='font-bold'>Q2 Correct:</span>
+            <p>Excellent! A falling derivative value over time means growth is decelerating. For pineapples, this represents maturity, where cellular size becomes constant, and sucrose accumulates rapidly inside the vacuoles.</p>
+          </div>
+        `;
+      } else {
+        feedbackHTML += `
+          <div class='flex items-start gap-2 text-rose-800 pt-2 border-t border-slate-200/50'>
+            <span class='font-bold'>Q2 Incorrect:</span>
+            <p>Incorrect. A lower derivative value indicates that growth velocity is slowing down. It doesn't mean the plant is dying; rather, it is reaching physiological limits and channeling photosynthates into sugar conversion.</p>
+          </div>
+        `;
+      }
+
+      // Final feedback score formatting
+      feedbackHTML += `
+        <div class='mt-4 pt-3 border-t border-slate-200 text-slate-800 font-bold flex items-center gap-2'>
+          <span>Quiz Completed! Your Score: ${score}/2</span>
+          <span class='text-[10px] px-2 py-0.5 rounded ${score === 2 ? 'bg-emerald-100 text-emerald-800' : 'bg-orange-100 text-orange-800'}'>
+            ${score === 2 ? 'Excellent' : 'Keep Reviewing'}
+          </span>
+        </div>
+      </div>`;
+
+      feedbackBox.className = `p-4 rounded-xl border ${score === 2 ? 'bg-emerald-50 border-emerald-200' : 'bg-orange-50 border-orange-200'}`;
+      feedbackBox.innerHTML = feedbackHTML;
+      feedbackBox.classList.remove('hidden');
+    }
+
+    function resetQuiz() {
+      document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+      const feedbackBox = document.getElementById('quiz-feedback');
+      feedbackBox.classList.add('hidden');
+    }
+
+    // --- Window Load Trigger ---
+    window.onload = function() {
+      // Initialize layout, Chart element, and evaluate the starting midpoint values
+      initChart();
+      updateSimulation(15.0);
+    };
+  </script>
+</body>
+</html>
